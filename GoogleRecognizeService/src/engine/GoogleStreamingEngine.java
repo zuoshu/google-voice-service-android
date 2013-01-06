@@ -24,7 +24,7 @@ import engine.StreamResponse.Status;
 public class GoogleStreamingEngine extends AbstractEngine implements Runnable,
 		StreamListener {
 	private static final String TAG = "GoogleStreamingEngine";
-	private static final int TIMEOUT = 30 * 1000;
+	private static final int TIMEOUT = 10 * 1000;
 	private static final int TRY_STOP_TIME = 100;
 	private static final int THREAD_TRY_TIME = 20;
 
@@ -60,7 +60,7 @@ public class GoogleStreamingEngine extends AbstractEngine implements Runnable,
 		upStream.setSocketTimeout(TIMEOUT);
 		upStream.setMethod(Stream.METHOD_POST);
 		upStream.setStreamListener(this);
-		downStreamRunnable = new GetResponseRunnable();
+		// downStreamRunnable = new GetResponseRunnable();
 		firstRun = true;
 		mState = STATE_IDLE;
 	}
@@ -221,15 +221,9 @@ public class GoogleStreamingEngine extends AbstractEngine implements Runnable,
 	private void connectUpStream() {
 		mPairKey = generateRequestPairKey();
 		upStream.setUrl(buildUpUrl(mPairKey));
+		upStream.setPairKey(mPairKey);
 		upStream.setMethod(Stream.METHOD_POST);
-		if (upStream.connect()) {
-			new Thread(new Runnable() {
-
-				@Override
-				public void run() {
-					fetchResults();
-				}
-			}).start();
+		if (upStream.connect2()) {
 			Log.d(TAG, "engine->STATE_UP_STREAM_CONNECTED");
 			mState = STATE_UP_STREAM_CONNECTED;
 		}
@@ -239,20 +233,20 @@ public class GoogleStreamingEngine extends AbstractEngine implements Runnable,
 
 	private synchronized void transmitAudioUpstream(byte[] chunk) {
 		upStream.transmitData(chunk);
-		// if (firstTransmit) {
-		// firstTransmit = false;
-		// new Thread(new Runnable() {
-		//
-		// @Override
-		// public void run() {
-		// fetchResults();
-		// }
-		// }).start();
-		// }
+//		if (firstTransmit) {
+//			firstTransmit = false;
+//			new Thread(new Runnable() {
+//
+//				@Override
+//				public void run() {
+//					fetchResults();
+//				}
+//			}).start();
+//		}
 	}
 
 	private void sendStopPacketAndGetResponse() {
-		// sendStopPacket();
+		sendStopPacket();
 		// fetchResults();
 		upStream.getResponse();
 		Log.d(TAG, "engine->STATE_WAITING_DOWNSTREAM_RESULTS");
@@ -342,6 +336,7 @@ public class GoogleStreamingEngine extends AbstractEngine implements Runnable,
 
 	private void reset() {
 		firstTransmit = true;
+		upStream.reset();
 		mState = STATE_IDLE;
 	}
 
@@ -369,10 +364,10 @@ public class GoogleStreamingEngine extends AbstractEngine implements Runnable,
 	}
 
 	private void processResponse(StreamResponse response) {
-		if (response != null && response.getSource() == upStream) {
-			// ignore upstream response
-			return;
-		}
+//		if (response != null && response.getSource() == upStream) {
+//			// ignore upstream response
+//			return;
+//		}
 
 		if ((response == null || response.getStatus() == Status.ERROR)
 				&& (response.getResponse() == null || response.getResponse().length == 0)) {
@@ -380,13 +375,13 @@ public class GoogleStreamingEngine extends AbstractEngine implements Runnable,
 			return;
 		}
 
-		if (response.getSource() == upStream) {
-			// ignore upstream response
-			Log.d(TAG, "response.getSource() == upStream");
-			return;
-		} else {
-			Log.d(TAG, "response source:" + response.getSource());
-		}
+//		if (response.getSource() == upStream) {
+//			// ignore upstream response
+//			Log.d(TAG, "response.getSource() == upStream");
+//			return;
+//		} else {
+//			Log.d(TAG, "response source:" + response.getSource());
+//		}
 		ChunkBuffer cb = new ChunkBuffer();
 		cb.transform(response.getResponse());
 		if (cb.hasChunk()) {

@@ -6,9 +6,13 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.ByteBuffer;
 
 import android.text.TextUtils;
 import android.util.Log;
+
+import com.oneguy.recognize.Util;
+
 import engine.StreamResponse.Status;
 
 public class Stream {
@@ -29,6 +33,7 @@ public class Stream {
 	private String method;
 	private String contentType;
 	private String name;
+	private String pairKey;
 
 	private DataInputStream inStream;
 	private DataOutputStream outStream;
@@ -85,6 +90,14 @@ public class Stream {
 		this.contentType = contentType;
 	}
 
+	public String getPairKey() {
+		return pairKey;
+	}
+
+	public void setPairKey(String pairKey) {
+		this.pairKey = pairKey;
+	}
+
 	public boolean connect() {
 		Log.d(TAG, name + " doConnect url:" + url + " method:" + method
 				+ " contentType:" + contentType);
@@ -131,8 +144,37 @@ public class Stream {
 		}
 	}
 
+	public boolean connect2() {
+		Log.d(TAG, name + " doConnect url:" + url + " method:" + method
+				+ " contentType:" + contentType);
+		try {
+			// URL uri = new URL(url);
+			ConnectionHelper ch = new ConnectionHelper();
+			connection = ch.getAvaiableGoogleVoiceServiceUPConnection(pairKey,
+					contentType, method);
+
+			if (outStream == null) {
+				try {
+					outStream = new DataOutputStream(
+							connection.getOutputStream());
+				} catch (IOException e) {
+					onError(e);
+					return false;
+				}
+			}
+			mState = STATE_CONNECTED;
+			Log.d(TAG, name + "->STATE_CONNECTED");
+			return true;
+		} catch (MalformedURLException e) {
+			onError(e);
+			return false;
+		} catch (IOException e) {
+			onError(e);
+			return false;
+		}
+	}
+
 	public void transmitData(byte[] data) {
-		Log.d(TAG, "transmitData:" + data.length);
 		if (data == null || connection == null) {
 			return;
 		}
@@ -153,6 +195,7 @@ public class Stream {
 
 	public void disconnect() {
 		Log.d(TAG, name + ":disconnect");
+
 		if (inStream != null) {
 			try {
 				inStream.close();
@@ -177,37 +220,43 @@ public class Stream {
 	}
 
 	public void getResponse() {
+		Util.logTime("trasmit end");
 		if (connection == null) {
 			onError("connection null!");
 			return;
 		}
 		try {
 			if (inStream == null) {
-//				connection.connect();
 				inStream = new DataInputStream(connection.getInputStream());
 			}
 			if (connection.getResponseCode() == 200) {
 				Log.d(TAG, name + ": in doGetResponse connect to "
 						+ connection.getURL().toString());
 			} else {
+				StreamResponse response = new StreamResponse(this, Status.ERROR);
+				response.setResponseCode(connection.getResponseCode());
 				if (mStreamListener != null) {
-					mStreamListener
-							.onStreamError(Engine.SPEECH_RECOGNITION_ERROR_NETWORK);
+					mStreamListener.onStreamResponse(response);
 				}
 				return;
 			}
-			byte[] data1 = new byte[0];
-			inStream.read(data1);
-			byte[] data = new byte[inStream.available()];
-			inStream.read(data);
-			Log.d(TAG, name + " response:" + new String(data));
+			ByteBuffer bb = ByteBuffer.allocate(1024 * 5);
+			byte[] dataBuf = new byte[1024];
+			int read = inStream.read(dataBuf);
+			while (read != -1) {
+				bb.put(dataBuf, 0, read);
+				read = inStream.read(dataBuf);
+			}
+			byte[] finalData = new byte[bb.position()];
+			bb.flip();
+			bb.get(finalData);
 			StreamResponse response = new StreamResponse(this, Status.SUCCESS);
 			response.setResponseCode(connection.getResponseCode());
-			response.setResponse(data);
+			response.setResponse(finalData);
 			if (mStreamListener != null) {
 				mStreamListener.onStreamResponse(response);
 			}
-			Log.d(TAG, name + "->read:" + data.length);
+			Log.d(TAG, name + "->read:" + finalData.length);
 		} catch (IOException e) {
 			onError(e);
 			return;
