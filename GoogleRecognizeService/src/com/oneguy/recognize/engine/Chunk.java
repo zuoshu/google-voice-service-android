@@ -1,4 +1,4 @@
-package engine;
+package com.oneguy.recognize.engine;
 
 public class Chunk {
 

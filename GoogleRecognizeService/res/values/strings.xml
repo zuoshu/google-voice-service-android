@@ -16,5 +16,8 @@
     <string name="send">send</string>
     <string name="can_not_recognize">Sorry, I did not hear you clearly, please speak again!</string>
     <string name="can_not_connect_server">Sorry, can not connect to voice server, try again later!</string>
+    <string name="title_init">init...</string>
+    <string name="title_recording">recording</string>
+    <string name="title_processing">processing...</string>
 
 </resources>

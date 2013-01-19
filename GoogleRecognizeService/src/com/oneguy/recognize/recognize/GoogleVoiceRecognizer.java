@@ -1,46 +1,51 @@
-package recognize;
+package com.oneguy.recognize.recognize;
 
-import record.AudioDataListener;
-import record.RecorderImpl;
+import android.app.Activity;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
-import android.provider.SyncStateContract.Constants;
 import android.util.Log;
 
-import com.oneguy.recognize.BuildConfig;
-import com.oneguy.recognize.R.menu;
-
-import engine.AbstractEngine;
-import engine.GoogleOneshotEngine;
-import engine.GoogleStreamingEngine;
-import engine.Engine;
+import com.oneguy.recognize.engine.AbstractEngine;
+import com.oneguy.recognize.engine.GoogleOneshotEngine;
+import com.oneguy.recognize.engine.GoogleStreamingEngine;
+import com.oneguy.recognize.recognize.AutoDetector.SpeechStatus;
+import com.oneguy.recognize.record.AudioDataListener;
+import com.oneguy.recognize.record.RecorderImpl;
 
 public class GoogleVoiceRecognizer implements Runnable, AudioDataListener,
-		Recognizer {
+		Recognizer, EngineResultListener {
 	private static final String TAG = "GoogleVoiceRecognizer";
+	public static final int EVENT_START = 1;
+	public static final int EVENT_STOP = 2;
+	public static final int EVENT_SHUTDOWN = 3;
+	public static final int EVENT_AUDIO_DATA = 4;
+	private static final int STATE_IDLE = 1;
+	private static final int STATE_RECOGNIZING = 2;
+	private static final int WAIT_INTERNAL = 100;
+	private static final int THREAD_START_TRY_TIME = 20;
 
 	private Handler mHandler;
 	private RecorderImpl mRecorder;
 	private AbstractEngine mEngine;
 	private int mState;
 	private boolean selfThreadStarted;
+	private AutoDetector detector;
+	private SpeechActionListener mSpeechActionListener;
+	private boolean mShowSpeechActionPrompt;
 
-	public static final int EVENT_START = 1;
-	public static final int EVENT_STOP = 2;
-	public static final int EVENT_SHUTDOWN = 3;
-	public static final int EVENT_AUDIO_DATA = 4;
+	private EngineResultListener mResultListener;
+	private Activity mActivity;
 
-	private static final int STATE_IDLE = 1;
-	private static final int STATE_RECOGNIZING = 2;
-	private static final int WAIT_INTERNAL = 100;
-	private static final int THREAD_START_TRY_TIME = 20;
+	// private boolean mDropResponse;
 
 	public GoogleVoiceRecognizer(Config config, AbstractEngine engine) {
 		mRecorder = new RecorderImpl(config.sampleRate, config.nChannelConfig,
 				config.audioConfig);
 		mRecorder.setAudioDataListener(this);
 		mEngine = engine;
+		mEngine.setRecognizeListener(this);
+		mShowSpeechActionPrompt = true;
 
 		String mimeType = "";
 		if (config.encodeType.equals(Config.ENCODE_WAV)) {
@@ -54,7 +59,7 @@ public class GoogleVoiceRecognizer implements Runnable, AudioDataListener,
 	}
 
 	public GoogleVoiceRecognizer() {
-		this(Config.getDefault(), new GoogleStreamingEngine());
+		this(Config.getDefault(), new GoogleOneshotEngine());
 	}
 
 	public GoogleVoiceRecognizer(Config config) {
@@ -63,6 +68,17 @@ public class GoogleVoiceRecognizer implements Runnable, AudioDataListener,
 
 	public GoogleVoiceRecognizer(AbstractEngine engine) {
 		this(Config.getDefault(), engine);
+	}
+
+	public void enableSpeechActionPrompt(Activity act) {
+		mActivity = act;
+		mShowSpeechActionPrompt = true;
+		mSpeechActionListener = new SpeechActionPrompt(mActivity);
+	}
+
+	public void disableSpeechActionPrompt() {
+		mShowSpeechActionPrompt = false;
+		mSpeechActionListener = null;
 	}
 
 	@Override
@@ -110,6 +126,9 @@ public class GoogleVoiceRecognizer implements Runnable, AudioDataListener,
 	}
 
 	public void start() {
+		if (mSpeechActionListener != null && mShowSpeechActionPrompt) {
+			mSpeechActionListener.onInit();
+		}
 		// start self first
 		if (!selfThreadStarted) {
 			startSelf();
@@ -117,8 +136,13 @@ public class GoogleVoiceRecognizer implements Runnable, AudioDataListener,
 		}
 		if (mHandler == null) {
 			Log.d(TAG, "recognizer not inited,can not start");
+			if (mSpeechActionListener != null && mShowSpeechActionPrompt) {
+				mSpeechActionListener.onEnd();
+			}
 			return;
 		}
+		// mDropResponse = false;
+		// Log.d(TAG, "mDropResponse->"+mDropResponse);
 		mHandler.sendEmptyMessage(EVENT_START);
 	}
 
@@ -157,22 +181,48 @@ public class GoogleVoiceRecognizer implements Runnable, AudioDataListener,
 		if (mHandler == null) {
 			Log.d(TAG, "recognizer not inited,can not receive audio");
 		}
-		Message msg = new Message();
-		msg.what = EVENT_AUDIO_DATA;
-		msg.obj = data;
-		mHandler.sendMessage(msg);
+		SpeechStatus status = detector.determineSpeechState(data);
+		switch (status.state) {
+		case AutoDetector.SILENT:
+			if (mSpeechActionListener != null && mShowSpeechActionPrompt) {
+				mSpeechActionListener.onSilence();
+			}
+			break;
+		case AutoDetector.SPEAKING:
+		case AutoDetector.START_SPEECH:
+			if (mSpeechActionListener != null && mShowSpeechActionPrompt) {
+				mSpeechActionListener.onSpeech(status);
+			}
+			Message msg = new Message();
+			msg.what = EVENT_AUDIO_DATA;
+			msg.obj = data;
+			mHandler.sendMessage(msg);
+			break;
+		case AutoDetector.END_SPEECH:
+			if (mSpeechActionListener != null && mShowSpeechActionPrompt) {
+				mSpeechActionListener.onWaitSpeechResult();
+			}
+//			stopRecorder();
+			stop();
+			break;
+		}
 	}
 
-	public void setRecognizeListener(RecognizeListener listener) {
-		if (mEngine != null) {
-			mEngine.setRecognizeListener(listener);
-		}
+	// public void stopWithoutResponse() {
+	// mDropResponse = true;
+	// Log.d(TAG, "mDropResponse->" + mDropResponse);
+	// stop();
+	// }
+
+	public void setResultListener(EngineResultListener listener) {
+		mResultListener = listener;
 	}
 
 	private void startRecorderAndEngine() {
 		new Thread(mRecorder).start();
 		int tryTimes = 0;
-		while (mRecorder.getHandler() == null
+		detector = new AutoDetector();
+		while ((mRecorder.getHandler() == null || detector == null)
 				&& tryTimes < THREAD_START_TRY_TIME) {
 			try {
 				Log.d(TAG, "wait recorder start!");
@@ -193,10 +243,17 @@ public class GoogleVoiceRecognizer implements Runnable, AudioDataListener,
 	}
 
 	private void stopRecorderAndEngine() {
+//		if (mSpeechActionListener != null && mShowSpeechActionPrompt) {
+//			mSpeechActionListener.onEnd();
+//		}
 		mRecorder.stop();
 		mEngine.stop();
 		Log.d(TAG, "recognizer->STATE_IDLE");
 		mState = STATE_IDLE;
+	}
+
+	private void stopRecorder() {
+		mRecorder.stop();
 	}
 
 	private void shutdownAll() {
@@ -209,6 +266,26 @@ public class GoogleVoiceRecognizer implements Runnable, AudioDataListener,
 	private void stopAndShutdown() {
 		stopRecorderAndEngine();
 		shutdownAll();
+	}
+
+	@Override
+	public void onError(int errorCode) {
+		if (mSpeechActionListener != null && mShowSpeechActionPrompt) {
+			mSpeechActionListener.onEnd();
+		}
+		if (mResultListener != null) {
+			mResultListener.onError(errorCode);
+		}
+	}
+
+	@Override
+	public void onResult(String result) {
+		if (mResultListener != null) {
+			mResultListener.onResult(result);
+		}
+		if (mSpeechActionListener != null && mShowSpeechActionPrompt) {
+			mSpeechActionListener.onEnd();
+		}
 	}
 
 }

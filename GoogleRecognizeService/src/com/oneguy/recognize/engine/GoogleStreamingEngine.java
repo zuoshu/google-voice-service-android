@@ -1,4 +1,4 @@
-package engine;
+package com.oneguy.recognize.engine;
 
 import java.io.IOException;
 import java.util.Random;
@@ -11,15 +11,15 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.params.CoreConnectionPNames;
 import org.apache.http.util.EntityUtils;
 
-import recognize.RecognizeListener;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
 
 import com.oneguy.recognize.BuildConfig;
+import com.oneguy.recognize.engine.StreamResponse.Status;
+import com.oneguy.recognize.recognize.EngineResultListener;
 
-import engine.StreamResponse.Status;
 
 public class GoogleStreamingEngine extends AbstractEngine implements Runnable,
 		StreamListener {
@@ -46,7 +46,7 @@ public class GoogleStreamingEngine extends AbstractEngine implements Runnable,
 	private static final String DOWN_STREAM_PRFX = "/down?";
 
 	private int mState;
-	private RecognizeListener mRecognizeListener;
+	private EngineResultListener mRecognizeListener;
 	private Handler mHandler;
 	private GetResponseRunnable downStreamRunnable;
 	private Stream upStream;
@@ -66,7 +66,7 @@ public class GoogleStreamingEngine extends AbstractEngine implements Runnable,
 	}
 
 	@Override
-	public void setRecognizeListener(RecognizeListener l) {
+	public void setRecognizeListener(EngineResultListener l) {
 		mRecognizeListener = l;
 	}
 

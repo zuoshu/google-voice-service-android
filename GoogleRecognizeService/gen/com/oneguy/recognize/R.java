@@ -33,13 +33,28 @@ public final class R {
         public static final int mick_speak=0x7f02000d;
         public static final int siri_button_normal=0x7f02000e;
         public static final int siri_button_running=0x7f02000f;
+        public static final int spinner_114_0=0x7f020010;
+        public static final int spinner_114_1=0x7f020011;
+        public static final int spinner_114_10=0x7f020012;
+        public static final int spinner_114_11=0x7f020013;
+        public static final int spinner_114_2=0x7f020014;
+        public static final int spinner_114_3=0x7f020015;
+        public static final int spinner_114_4=0x7f020016;
+        public static final int spinner_114_5=0x7f020017;
+        public static final int spinner_114_6=0x7f020018;
+        public static final int spinner_114_7=0x7f020019;
+        public static final int spinner_114_8=0x7f02001a;
+        public static final int spinner_114_9=0x7f02001b;
+        public static final int vs_popup_mic_base=0x7f02001c;
+        public static final int vs_popup_mic_full=0x7f02001d;
     }
     public static final class id {
         public static final int confirm=0x7f09000a;
         public static final int editInput=0x7f090002;
         public static final int input=0x7f090000;
         public static final int lable=0x7f090006;
-        public static final int menu_settings=0x7f09000b;
+        public static final int menu_settings=0x7f09000d;
+        public static final int promptImg=0x7f09000c;
         public static final int radioGroup=0x7f090007;
         public static final int radioOneshot=0x7f090008;
         public static final int radioStream=0x7f090009;
@@ -47,10 +62,12 @@ public final class R {
         public static final int send=0x7f090003;
         public static final int speekButton=0x7f090004;
         public static final int textInput=0x7f090001;
+        public static final int title=0x7f09000b;
     }
     public static final class layout {
         public static final int activity_main=0x7f030000;
         public static final int choose_server=0x7f030001;
+        public static final int prompt=0x7f030002;
     }
     public static final class menu {
         public static final int activity_main=0x7f080000;
@@ -76,6 +93,9 @@ public final class R {
         public static final int shutdown=0x7f060005;
         public static final int start=0x7f060003;
         public static final int stop=0x7f060004;
+        public static final int title_init=0x7f06000f;
+        public static final int title_processing=0x7f060011;
+        public static final int title_recording=0x7f060010;
     }
     public static final class style {
         /** 

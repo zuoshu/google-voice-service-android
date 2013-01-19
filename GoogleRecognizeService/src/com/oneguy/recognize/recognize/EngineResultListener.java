@@ -1,6 +1,6 @@
-package recognize;
+package com.oneguy.recognize.recognize;
 
-public interface RecognizeListener {
+public interface EngineResultListener {
 	/**
 	 * 
 	 * @param errorCode

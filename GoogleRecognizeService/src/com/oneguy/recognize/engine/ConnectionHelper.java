@@ -1,4 +1,4 @@
-package engine;
+package com.oneguy.recognize.engine;
 
 import java.io.DataOutputStream;
 import java.io.IOException;

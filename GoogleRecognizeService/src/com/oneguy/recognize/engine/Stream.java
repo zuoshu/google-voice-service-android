@@ -1,4 +1,4 @@
-package engine;
+package com.oneguy.recognize.engine;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -12,8 +12,8 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import com.oneguy.recognize.Util;
+import com.oneguy.recognize.engine.StreamResponse.Status;
 
-import engine.StreamResponse.Status;
 
 public class Stream {
 	private static final String TAG = "Stream";

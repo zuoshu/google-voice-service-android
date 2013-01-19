@@ -1,4 +1,4 @@
-package recognize;
+package com.oneguy.recognize.recognize;
 
 public interface Recognizer {
 	/**
@@ -18,5 +18,5 @@ public interface Recognizer {
 	 */
 	public void shutdown();
 
-	public void setRecognizeListener(RecognizeListener listener);
+	public void setResultListener(EngineResultListener listener);
 }

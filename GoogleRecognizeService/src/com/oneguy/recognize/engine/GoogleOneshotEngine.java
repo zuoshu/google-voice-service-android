@@ -1,11 +1,12 @@
-package engine;
+package com.oneguy.recognize.engine;
 
-import recognize.RecognizeListener;
+import com.oneguy.recognize.engine.StreamResponse.Status;
+import com.oneguy.recognize.recognize.EngineResultListener;
+
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
-import engine.StreamResponse.Status;
 
 public class GoogleOneshotEngine extends AbstractEngine implements Runnable,
 		StreamListener {
@@ -23,7 +24,7 @@ public class GoogleOneshotEngine extends AbstractEngine implements Runnable,
 	private static final int STATE_SHUTDOWN = 1004;
 
 	private int mState;
-	private RecognizeListener mRecognizeListener;
+	private EngineResultListener mRecognizeListener;
 	private Handler mHandler;
 	private Stream mStream;
 	private boolean firstRun;
@@ -42,7 +43,7 @@ public class GoogleOneshotEngine extends AbstractEngine implements Runnable,
 	}
 
 	@Override
-	public void setRecognizeListener(RecognizeListener l) {
+	public void setRecognizeListener(EngineResultListener l) {
 		mRecognizeListener = l;
 	}
 

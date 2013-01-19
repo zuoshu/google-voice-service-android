@@ -1,4 +1,4 @@
-package recognize;
+package com.oneguy.recognize.recognize;
 
 import android.media.AudioFormat;
 

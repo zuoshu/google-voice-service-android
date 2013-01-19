@@ -1,4 +1,4 @@
-package record;
+package com.oneguy.recognize.record;
 
 import android.media.AudioFormat;
 import android.media.AudioRecord;
