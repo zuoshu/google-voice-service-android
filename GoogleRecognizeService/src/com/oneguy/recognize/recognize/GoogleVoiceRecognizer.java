@@ -1,3 +1,14 @@
+/*******************************************************************************
+ * Copyright (c) 2012 Zuoshu (zuoshu.wuhan@gmail.com).
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the GNU Lesser General Public License v3.0
+ * which accompanies this distribution, and is available at
+ * http://www.gnu.org/licenses/lgpl-3.0.html
+ * 
+ * Contributors:
+ *     Zuoshu - initial API and implementation
+ ******************************************************************************/
+
 package com.oneguy.recognize.recognize;
 
 import android.app.Activity;
@@ -37,13 +48,14 @@ public class GoogleVoiceRecognizer implements Runnable, AudioDataListener,
 	private EngineResultListener mResultListener;
 	private Activity mActivity;
 
-	public GoogleVoiceRecognizer(Config config, AbstractEngine engine) {
+	public GoogleVoiceRecognizer(Config config, AbstractEngine engine,
+			Activity activity) {
 		mRecorder = new RecorderImpl(config.sampleRate, config.nChannelConfig,
 				config.audioConfig);
 		mRecorder.setAudioDataListener(this);
 		mEngine = engine;
 		mEngine.setRecognizeListener(this);
-		mShowSpeechActionPrompt = true;
+		enableSpeechActionPrompt(activity);
 
 		String mimeType = "";
 		if (config.encodeType.equals(Config.ENCODE_WAV)) {
@@ -56,19 +68,19 @@ public class GoogleVoiceRecognizer implements Runnable, AudioDataListener,
 		selfThreadStarted = false;
 	}
 
-	public GoogleVoiceRecognizer() {
-		this(Config.getDefault(), new GoogleOneshotEngine());
+	public GoogleVoiceRecognizer(Activity activity) {
+		this(Config.getDefault(), new GoogleOneshotEngine(), activity);
 	}
 
-	public GoogleVoiceRecognizer(Config config) {
-		this(config, new GoogleStreamingEngine());
+	public GoogleVoiceRecognizer(Config config, Activity activity) {
+		this(config, new GoogleStreamingEngine(), activity);
 	}
 
-	public GoogleVoiceRecognizer(AbstractEngine engine) {
-		this(Config.getDefault(), engine);
+	public GoogleVoiceRecognizer(AbstractEngine engine, Activity activity) {
+		this(Config.getDefault(), engine, activity);
 	}
 
-	public void enableSpeechActionPrompt(Activity act) {
+	private void enableSpeechActionPrompt(Activity act) {
 		mActivity = act;
 		mShowSpeechActionPrompt = true;
 		mSpeechActionListener = new SpeechActionPrompt(mActivity);

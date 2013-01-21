@@ -1,12 +1,23 @@
+/*******************************************************************************
+ * Copyright (c) 2012 Zuoshu (zuoshu.wuhan@gmail.com).
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the GNU Lesser General Public License v3.0
+ * which accompanies this distribution, and is available at
+ * http://www.gnu.org/licenses/lgpl-3.0.html
+ * 
+ * Contributors:
+ *     Zuoshu - initial API and implementation
+ ******************************************************************************/
+
 package com.oneguy.recognize.recognize;
 
 import android.app.Activity;
 import android.graphics.Bitmap;
+import android.graphics.Bitmap.Config;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Rect;
-import android.graphics.Bitmap.Config;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
@@ -26,7 +37,7 @@ public class SpeechActionPrompt implements SpeechActionListener {
 	private TextView mTitle;
 	private ImageView mPromptImg;
 	private static final double MIN_RMS = 0.02f;
-	private static final double MAX_RMS = 0.3f;
+	private static final double MAX_RMS = 0.25f;
 	private Bitmap[] bitmapCache;
 	private static final int BITMAP_CACHE_SIZE = 20;
 
