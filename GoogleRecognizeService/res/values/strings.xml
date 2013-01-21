@@ -1,21 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">ChatBot</string>
-    <string name="hello_world">Hello world!</string>
-    <string name="menu_settings">Settings</string>
-    <string name="start">start</string>
-    <string name="stop">stop</string>
-    <string name="shutdown">shutdown</string>
-    <string name="hint">speak</string>
-    <string name="hint_unpressed">leave to recognize</string>
-    <string name="network_disabled">Can not access Internet, make sure you have turned Data Access on!</string>
-    <string name="network_tip">Network</string>
-    <string name="retry">Retry</string>
-    <string name="quit">Quit</string>
-    <string name="send">send</string>
-    <string name="can_not_recognize">Sorry, I did not hear you clearly, please speak again!</string>
-    <string name="can_not_connect_server">Sorry, can not connect to voice server, try again later!</string>
     <string name="title_init">init...</string>
     <string name="title_recording">recording</string>
     <string name="title_processing">processing...</string>

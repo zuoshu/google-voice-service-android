@@ -37,8 +37,6 @@ public class GoogleVoiceRecognizer implements Runnable, AudioDataListener,
 	private EngineResultListener mResultListener;
 	private Activity mActivity;
 
-	// private boolean mDropResponse;
-
 	public GoogleVoiceRecognizer(Config config, AbstractEngine engine) {
 		mRecorder = new RecorderImpl(config.sampleRate, config.nChannelConfig,
 				config.audioConfig);
@@ -141,8 +139,6 @@ public class GoogleVoiceRecognizer implements Runnable, AudioDataListener,
 			}
 			return;
 		}
-		// mDropResponse = false;
-		// Log.d(TAG, "mDropResponse->"+mDropResponse);
 		mHandler.sendEmptyMessage(EVENT_START);
 	}
 
@@ -202,17 +198,10 @@ public class GoogleVoiceRecognizer implements Runnable, AudioDataListener,
 			if (mSpeechActionListener != null && mShowSpeechActionPrompt) {
 				mSpeechActionListener.onWaitSpeechResult();
 			}
-//			stopRecorder();
 			stop();
 			break;
 		}
 	}
-
-	// public void stopWithoutResponse() {
-	// mDropResponse = true;
-	// Log.d(TAG, "mDropResponse->" + mDropResponse);
-	// stop();
-	// }
 
 	public void setResultListener(EngineResultListener listener) {
 		mResultListener = listener;
@@ -243,17 +232,13 @@ public class GoogleVoiceRecognizer implements Runnable, AudioDataListener,
 	}
 
 	private void stopRecorderAndEngine() {
-//		if (mSpeechActionListener != null && mShowSpeechActionPrompt) {
-//			mSpeechActionListener.onEnd();
-//		}
+		// if (mSpeechActionListener != null && mShowSpeechActionPrompt) {
+		// mSpeechActionListener.onEnd();
+		// }
 		mRecorder.stop();
 		mEngine.stop();
 		Log.d(TAG, "recognizer->STATE_IDLE");
 		mState = STATE_IDLE;
-	}
-
-	private void stopRecorder() {
-		mRecorder.stop();
 	}
 
 	private void shutdownAll() {
